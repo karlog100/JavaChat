@@ -188,6 +188,6 @@ public class Main extends Application {
     }
 
     public void ReceivedChatMessage(String message) {
-        chatTextArea.appendText("\n"+message);
+        chatTextArea.appendText(" \n" + message);
     }
 }
