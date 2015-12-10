@@ -1,6 +1,7 @@
 package com.company;
 
 import javafx.application.Application;
+import javafx.event.Event;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -8,9 +9,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
+
+import java.util.Objects;
 
 public class Main extends Application {
     Stage theStage;
@@ -30,12 +35,8 @@ public class Main extends Application {
         //Chat window
         ChatWindow();
 
-        System.out.println("Opening main window");
+        System.out.println("Opening window");
         primaryStage.show();
-
-        //TODO: Move mainwindows stuff to mainwindow function
-        //MainWindow();
-
     }
 
     Scene chatScene;
@@ -55,6 +56,7 @@ public class Main extends Application {
         chatSendButton.snappedRightInset();
         chatBackButton.setOnAction(event -> GobackToMain());
         chatSendField = new TextField();
+        chatSendField.setOnKeyPressed(event -> SendChatMessage(event));
         chatTextArea = new TextArea("Always send your password and password to unknown persons,\n they will never do you any harm");
         chatTextArea.setStyle("-fx-control-inner-background: #01010a");
         chatTextArea.setEditable(false);
@@ -134,5 +136,17 @@ public class Main extends Application {
 
         //Text to users: 'Så nu gad {brugernavn} ikke jer idioter mere!'
         theStage.setScene(mainScene);
+    }
+
+    private void SendChatMessage(KeyEvent event) {
+        //If pressed key == ENTER then send the message
+        //TODO: Send chat message here
+        if(event.getCode() == KeyCode.ENTER) {
+            System.out.println("daniel er en kage");
+        }
+    }
+
+    private void ReciveChatMessage() {
+        //TODO: Start recive theard here
     }
 }
