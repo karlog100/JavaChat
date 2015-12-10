@@ -15,10 +15,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 
-import java.util.Objects;
-
 public class Main extends Application {
     Stage theStage;
+    int serverPort;
+    Socket_Client sendConnection = new Socket_Client();
+    String nickName, chatRoomName, serverIp;
+    TextArea chatTextArea;
 
     public static void main(String[] args) {
         System.out.println("Starting the app");
@@ -44,7 +46,6 @@ public class Main extends Application {
         GridPane chatPane;
         Button chatBackButton, chatSendButton;
         TextField chatSendField;
-        TextArea chatTextArea;
 
         //Creating gridPane
         chatPane = new GridPane();
@@ -52,11 +53,15 @@ public class Main extends Application {
         //Setting buttons
         chatBackButton = new Button("Go Back");
         chatBackButton.snappedLeftInset();
+        chatBackButton.setOnAction(event -> GobackToMain());
+
+        chatSendField = new TextField();
+        chatSendField.setOnKeyPressed(event -> {SendChatMessage(event, chatSendField.getText(), chatSendField); });
+
         chatSendButton = new Button("Send!");
         chatSendButton.snappedRightInset();
-        chatBackButton.setOnAction(event -> GobackToMain());
-        chatSendField = new TextField();
-        chatSendField.setOnKeyPressed(event -> SendChatMessage(event));
+        chatSendButton.setOnAction(event -> {SendChatMessage(event, chatSendField.getText(), chatSendField);});
+
         chatTextArea = new TextArea("Always send your password and password to unknown persons,\n they will never do you any harm");
         chatTextArea.setStyle("-fx-control-inner-background: #01010a");
         chatTextArea.setEditable(false);
@@ -97,7 +102,7 @@ public class Main extends Application {
         mainNickName = new TextField();
         mainServerLabel = new Label("Chatroom name:");
         mainServerField = new TextField();
-        mainOk.setOnAction(event -> ConnectToChat(mainServerField.getText(), mainNickName.getText()));
+        mainOk.setOnAction(event -> {nickName = mainNickName.getText();});
 
         //Setting pane property's
         //mainPane.setGridLinesVisible(true);
@@ -124,29 +129,55 @@ public class Main extends Application {
 
     }
 
-    private void ConnectToChat(String chatRoomName, String nickName) {
-        //TODO: Add connection parms
-        //'Så er der en fladpadnde mere til stede.'
-
+    private void ConnectToChat() {
+        boolean isServerSet = (chatRoomName.contains("/") && chatRoomName.contains(":"));
+        //TODO: If this chat ever goes live then edit localhost to the default server ip
+        serverIp = (isServerSet) ? chatRoomName.split(":")[0] : "localhost";
+        String _serverPort = chatRoomName.split(":")[1];
+        _serverPort = _serverPort.split("/")[0];
+        serverPort = (isServerSet) ? Integer.parseInt(_serverPort): 50000;
+        chatRoomName = (isServerSet) ? chatRoomName.split("/")[1]: chatRoomName;
         theStage.setScene(chatScene);
-    }
+        sendConnection.Initalice();
+        System_Global.SYS_COMMANDS command = System_Global.SYS_COMMANDS.CONNECT_TO_SERVER;
+        command.Info(new Object[]{serverIp, serverPort, nickName, chatRoomName});
 
-    private void GobackToMain() {
-        //TODO: Make sure to tell the server that the user is leaving the chat
+        System.out.println("Selected chartroom name: " + chatRoomName);
 
-        //Text to users: 'Så nu gad {brugernavn} ikke jer idioter mere!'
-        theStage.setScene(mainScene);
-    }
+        System.out.println("Selected server: " + serverIp);
 
-    private void SendChatMessage(KeyEvent event) {
-        //If pressed key == ENTER then send the message
-        //TODO: Send chat message here
-        if(event.getCode() == KeyCode.ENTER) {
-            System.out.println("daniel er en kage");
+        System.out.println("Selected port: " + serverPort);
+        try {
+            sendConnection.Do_Command(command);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    private void ReciveChatMessage() {
-        //TODO: Start recive theard here
+    private void DisconnectFromChat() {
+        //Text to users: 'Så nu gad {brugernavn} ikke jer idioter mere!'
+        System_Global.SYS_COMMANDS messagePack = System_Global.SYS_COMMANDS.DISCONNECT_FROM_SERVER;
+        messagePack.Info(new Object[]{serverIp,serverPort,"",chatRoomName});
+
+    }
+
+    private void GobackToMain() {
+        DisconnectFromChat();
+        theStage.setScene(mainScene);
+    }
+
+    private void SendChatMessage(Event event, String message, TextField sendText) {
+        //If Sendbutton clicked OR pressed key == ENTER then send the message
+        //TODO: Send chat message here
+        if( ("ACTION".equals((event.getEventType()).toString())) || (("KEY_PRESSED".equals((event.getEventType()).toString())) && ((KeyEvent)event).getCode() == KeyCode.ENTER) ) {
+            sendText.clear();
+            System_Global.SYS_COMMANDS messagePack = System_Global.SYS_COMMANDS.SEND_MESSAGE;
+            //TODO: make ip stuff
+            messagePack.Info(new Object[]{serverIp, serverPort, message, chatRoomName});
+        }
+    }
+
+    public void ReceivedChatMessage(String message) {
+        chatTextArea.appendText(message);
     }
 }
