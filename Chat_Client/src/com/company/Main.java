@@ -16,11 +16,12 @@ import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-    Stage theStage;
-    int serverPort;
-    Socket_Client sendConnection = new Socket_Client();
-    String nickName, chatRoomName, serverIp;
-    TextArea chatTextArea;
+    private Stage theStage;
+    private int serverPort;
+    private Socket_Client sendConnection = new Socket_Client();
+    private String nickName, chatRoomName, serverIp;
+    private TextArea chatTextArea;
+    private Socket_Server Listener;
 
     public static void main(String[] args) {
         System.out.println("Starting the app");
@@ -39,6 +40,8 @@ public class Main extends Application {
 
         System.out.println("Opening window");
         primaryStage.show();
+
+        Listener = new Socket_Server(this);
     }
 
     Scene chatScene;
@@ -102,7 +105,7 @@ public class Main extends Application {
         mainNickName = new TextField();
         mainServerLabel = new Label("Chatroom name:");
         mainServerField = new TextField();
-        mainOk.setOnAction(event -> {nickName = mainNickName.getText();});
+        mainOk.setOnAction(event -> {nickName = mainNickName.getText(); chatRoomName = mainServerField.getText(); ConnectToChat();});
 
         //Setting pane property's
         //mainPane.setGridLinesVisible(true);
@@ -152,13 +155,15 @@ public class Main extends Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        Listener.Initialize();
     }
 
     private void DisconnectFromChat() {
         //Text to users: 'Så nu gad {brugernavn} ikke jer idioter mere!'
         System_Global.SYS_COMMANDS messagePack = System_Global.SYS_COMMANDS.DISCONNECT_FROM_SERVER;
         messagePack.Info(new Object[]{serverIp,serverPort,"",chatRoomName});
-
+        Listener.Dispose();
     }
 
     private void GobackToMain() {
@@ -174,10 +179,15 @@ public class Main extends Application {
             System_Global.SYS_COMMANDS messagePack = System_Global.SYS_COMMANDS.SEND_MESSAGE;
             //TODO: make ip stuff
             messagePack.Info(new Object[]{serverIp, serverPort, message, chatRoomName});
+            try {
+                sendConnection.Do_Command(messagePack);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void ReceivedChatMessage(String message) {
-        chatTextArea.appendText(message);
+        chatTextArea.appendText("\n"+message);
     }
 }

@@ -3,9 +3,7 @@ package Global;
 /**
  * Created by Lynspitti on 25-11-2015.
  */
-public final class System_Global {
-    public static final int MAX_MESSAGE_LEN = 1027;
-
+public class System_Global {
 //<editor-fold desc="System Properties">
     public enum SYS_STATES {
         ERROR       (-1),
@@ -33,12 +31,11 @@ public final class System_Global {
         SYS_REBOOT              (1),
         SYS_MESSAGE             (2,""),
 
-        USER_WHISPER            (3),
-        USER_MESSAGE            (4),
-        USER_CREATE_ROOM        (5),
-        USER_JOIN_ROOM          (6),
+        USER_MESSAGE            (3),
+        USER_JOIN_ROOM          (4),
+        USER_LEAVE              (5),
 
-        NOF_COMMANDS            (7);
+        NOF_COMMANDS            (6);
 
         private final int VALUE;
         private Object args[];
@@ -49,7 +46,7 @@ public final class System_Global {
             this.args = new Object[]{arg};
         }
 
-        public void Info(Object args[]){ this.args = args; }
+        public void Info(Object[] args){ this.args = args; }
         public void Info(Object args){ this.args = new Object[] {args}; }
 
         public int value() { return VALUE; }
@@ -58,6 +55,8 @@ public final class System_Global {
 
 //</editor-fold>
 //<editor-fold desc="Connection Properties">
-    public static final int SOC_PORT = 50000;
+    public static final int MAX_MESSAGE_LEN = 1027;
+    public static final int SOC_PORT_IN = 50000;
+    public static final int SOC_PORT_OUT = 50001;
 //</editor-fold>
 }

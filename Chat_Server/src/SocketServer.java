@@ -13,6 +13,7 @@ public class SocketServer extends Thread implements IBackThread {
     *   Variables
     *-------------------------------*/
     //<editor-fold desc="Thread Properties">
+    private Main_Controler Controler;
     private Thread SocketServer_Thread;
 
     private volatile boolean IsProcessing = false;
@@ -28,7 +29,8 @@ public class SocketServer extends Thread implements IBackThread {
     /*-------------------------------
     *   System Functions
     *-------------------------------*/
-    SocketServer(int Port){
+    SocketServer(Main_Controler Main,int Port){
+        Controler = Main;
         this.Port = Port;
     }
 
@@ -41,6 +43,7 @@ public class SocketServer extends Thread implements IBackThread {
         }
     }
 
+    @Override
     public void run() {
         Process();
     }
@@ -59,9 +62,10 @@ public class SocketServer extends Thread implements IBackThread {
                         throw new InterruptedException();
                     }
                     Socket socket = serverSocket.accept();
+                    System.out.println("Client Have been Accepted.");
 
                     //assign own Reply Thread / Handler
-                    SocketHandler Handler = new SocketHandler(socket);
+                    SocketHandler Handler = new SocketHandler(Controler,socket);
                     Handler.Initialize();
                 }
                 catch (SocketTimeoutException e){

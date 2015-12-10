@@ -1,4 +1,6 @@
+import Global.Socket_Packet;
 import Global.System_Global;
+import Global.User;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,6 +16,7 @@ public class SocketHandler extends Thread {
     /*-------------------------------
     *   Variables
     *-------------------------------*/
+    private Main_Controler Controler;
     private Thread SocketHandler_Thread;
     private Socket ThreadSocket;
 
@@ -31,16 +34,50 @@ public class SocketHandler extends Thread {
         return new String(hexChars);
     }*/
 
-    public byte[] MessageHandler(byte[] Message){
+    public byte[] MessageHandler(String ClientAddress, byte[] Message){
+        Socket_Packet Message_Packet = new Socket_Packet();
+        Message_Packet.Set_Data(Message);
 
+        if (Message_Packet.IsConnect_Message()){
+            String ChatRoom = Message_Packet.Get_ChatRoom();
 
-        return "Test".getBytes();
+            String NickName = Message_Packet.Get_NickName();
+            User new_user = new User(ClientAddress,NickName);
+
+            System_Global.SYS_COMMANDS CMD = System_Global.SYS_COMMANDS.USER_JOIN_ROOM;
+            CMD.Info(new Object[]{ChatRoom,new_user});
+            try{
+                Controler.System_DoCommand(CMD);
+            }
+            catch (InterruptedException e){}
+        }
+        else {
+            if (Message_Packet.Get_Data().equals("£$@LEAVING${$ff£€$")){
+                System_Global.SYS_COMMANDS CMD = System_Global.SYS_COMMANDS.USER_LEAVE;
+                CMD.Info(new Object[]{ClientAddress, Message_Packet});
+                try{
+                    Controler.System_DoCommand(CMD);
+                }
+                catch (InterruptedException e){}
+            }
+            else {
+                System_Global.SYS_COMMANDS CMD = System_Global.SYS_COMMANDS.USER_MESSAGE;
+                CMD.Info(new Object[]{ClientAddress, Message_Packet});
+                try{
+                    Controler.System_DoCommand(CMD);
+                }
+                catch (InterruptedException e){}
+            }
+        }
+
+        return "".getBytes();
     }
 
     /*-------------------------------
     *   System Functions
     *-------------------------------*/
-    SocketHandler(Socket socket) {
+    SocketHandler(Main_Controler Main, Socket socket) {
+        Controler = Main;
         ThreadSocket = socket;
     }
 
@@ -58,8 +95,9 @@ public class SocketHandler extends Thread {
         try {
             inputStream = new DataInputStream(ThreadSocket.getInputStream());
             String cliAddr = ThreadSocket.getInetAddress().getHostAddress();
-
+            System.out.println(cliAddr);
             try {
+                //Get Client Message
                 byte[] buffer = new byte[System_Global.MAX_MESSAGE_LEN];
                 int bytesRead = 0;
                 boolean end = false;
@@ -72,16 +110,15 @@ public class SocketHandler extends Thread {
                     }
                 }
 
-                //Send reply message
-                byte[] SendingData = new byte[System_Global.MAX_MESSAGE_LEN];
-                Arrays.fill(SendingData, (byte) 0 );
-                byte[] data = MessageHandler(buffer);
-                for (int i = 0; i < data.length; i++)
-                {
-                    SendingData[i] = data[i];
+                //Create Response Packet
+                Socket_Packet Packet = new Socket_Packet();
+                //Handle Client Message and Set Response
+                Packet.Set_Data(MessageHandler(cliAddr,buffer));
+                if (!Packet.IsEmpty()){
+                    //Send reply message
+                    outputStream = new DataOutputStream(ThreadSocket.getOutputStream());
+                    outputStream.write(Packet.Get_Data());
                 }
-                outputStream = new DataOutputStream(ThreadSocket.getOutputStream());
-                outputStream.write(SendingData);
             }
             catch (IOException e) {
             }

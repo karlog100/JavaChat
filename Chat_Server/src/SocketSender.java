@@ -1,13 +1,9 @@
-import Global.IBackThread;
 import Global.System_Global;
 
-import java.io.*;
-import java.net.ServerSocket;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Arrays;
-
-import static Global.System_Global.SOC_PORT;
 
 /**
  * Created by DBJ on 08-12-2015.
@@ -26,6 +22,7 @@ public class SocketSender extends Thread {
     // </editor-fold>
     //<editor-fold desc="Connection Properties">
     private Socket SocketSender;
+    private int Port;
     private String Receiver;
     private String Message;
     // </editor-fold>
@@ -33,9 +30,10 @@ public class SocketSender extends Thread {
     /*-------------------------------
     *   System Functions
     *-------------------------------*/
-    SocketSender(String ReceiverIp, String message) {
+    SocketSender(String ReceiverIp, int Port, String message) {
         Receiver = ReceiverIp;
         Message = message;
+        this.Port = Port;
     }
 
     public void Initialize () {
@@ -48,18 +46,19 @@ public class SocketSender extends Thread {
 
     public void run() {
         try{
-            SocketSender = new Socket("localhost", SOC_PORT);
+            SocketSender = new Socket(Receiver, Port);
             DataOutputStream dataOutputStream = new DataOutputStream(SocketSender.getOutputStream());
 
             byte[] SendingData = new byte[System_Global.MAX_MESSAGE_LEN];
             Arrays.fill(SendingData, (byte) 0 );
             byte[] data = Message.getBytes();
-            for (int i = 0; i < data.length; i++)
+            for (int i = 0; i < data.length && i < System_Global.MAX_MESSAGE_LEN; i++)
             {
                 SendingData[i] = data[i];
             }
+            System.out.println("printing data");
             dataOutputStream.write(SendingData);
-            InputStream inputStream = SocketSender.getInputStream();
+            /*InputStream inputStream = SocketSender.getInputStream();
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(System_Global.MAX_MESSAGE_LEN);
 
@@ -67,7 +66,7 @@ public class SocketSender extends Thread {
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 byteArrayOutputStream.write(buffer, 0, bytesRead);
-            }
+            }*/
 
             //TODO validate response "buffer"
         }

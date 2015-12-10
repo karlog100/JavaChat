@@ -85,16 +85,17 @@ public class Socket_Client extends Thread {
 
         switch (command) {
             case SEND_MESSAGE:
-                Data = (command.Info()[2] != null) ? ((String) command.Info()[3]+"my$@?+ts"+(String) command.Info()[2]) : "";
+                Data = (command.Info()[2] != null) ? ((String) command.Info()[3]+"my3324ts"+(String) command.Info()[2]) : "";
                 for (int i = 0; i < Data.length() && i < 1027; i++)
                 {
                     message[i] = Data.getBytes()[i];
                 }
+                System.out.println("Send message");
                 outputStream.write(message);
                 break;
 
             case CONNECT_TO_SERVER:
-                Data = (command.Info()[2] != null) ? ((String) command.Info()[3]+"25qw#*x98"+(String) command.Info()[2]) : "";
+                Data = (command.Info()[2] != null) ? ((String) command.Info()[3]+"25qw#x98"+(String) command.Info()[2]) : "";
                 for (int i = 0; i < Data.length() && i < 1027; i++)
                 {
                     message[i] = Data.getBytes()[i];
